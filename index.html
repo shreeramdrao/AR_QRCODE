@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WebAR Model Viewer</title>
 
-    <!-- Import model-viewer properly as a module -->
+    <!-- Import model-viewer as a module -->
     <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
 
     <style>
@@ -13,21 +13,47 @@
         model-viewer {
             width: 100vw;
             height: 100vh;
-            background-color: black;
+        }
+        
+        /* Style for the AR button */
+        #ar-button {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #007bff;
+            color: white;
+            font-size: 16px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        #ar-button:hover {
+            background-color: #0056b3;
         }
     </style>
 </head>
 <body>
 
-    <!-- WebAR Model Viewer -->
+    <!-- WebAR Model Viewer with Ground-Level Placement -->
     <model-viewer 
+        id="ar-viewer"
         src="https://ar-qrcode.vercel.app/assets/doric_pillar.glb"
         ar 
+        ar-scale="fixed"  <!-- Keeps the model size fixed in the real world -->
+        ar-placement="floor"  <!-- Ensures the model appears on the ground -->
         ar-modes="webxr scene-viewer quick-look"
         camera-controls 
         auto-rotate 
-        interaction-prompt="none">
+        interaction-prompt="none"
+        disable-tap
+        shadow-intensity="1">
         
+        <!-- Custom AR Button -->
+        <button id="ar-button" slot="ar-button">View in AR</button>
+
         <!-- Loading message -->
         <div slot="poster">Loading AR Model...</div>
 
