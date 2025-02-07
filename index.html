@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WebAR Model Viewer</title>
+    <title>WebAR Auto-Open</title>
 
-    <!-- Import model-viewer (Ensure it's a module) -->
+    <!-- Import model-viewer -->
     <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
 
     <style>
@@ -13,25 +13,6 @@
         model-viewer {
             width: 100vw;
             height: 100vh;
-        }
-        
-        /* AR Button Styling */
-        #ar-button {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: #007bff;
-            color: white;
-            font-size: 16px;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        
-        #ar-button:hover {
-            background-color: #0056b3;
         }
     </style>
 </head>
@@ -41,38 +22,30 @@
     <model-viewer 
         id="ar-viewer"
         src="https://ar-qrcode.vercel.app/assets/doric_pillar.glb"
-        ar 
+        ar
         ar-scale="fixed"
         ar-placement="floor"
         ar-modes="webxr scene-viewer quick-look"
-        camera-controls 
-        auto-rotate 
+        camera-controls
+        auto-rotate
         interaction-prompt="none"
         disable-tap
         shadow-intensity="1"
         style="background: transparent;">
-        
-        <!-- AR Button -->
-        <button id="ar-button" slot="ar-button">View in AR</button>
-
-        <!-- Loading message -->
-        <div slot="poster">Loading AR Model...</div>
-
     </model-viewer>
 
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             const modelViewer = document.getElementById("ar-viewer");
-            const arButton = document.getElementById("ar-button");
 
-            // Force WebXR to ask for camera permission
-            arButton.addEventListener("click", () => {
-                if (!navigator.xr) {
-                    alert("WebXR is not supported in your browser. Try using Chrome on Android.");
-                    return;
+            // Try to auto-activate AR mode
+            setTimeout(() => {
+                if (modelViewer.canActivateAR) {
+                    modelViewer.activateAR();
+                } else {
+                    alert("WebXR is not supported in your browser. Please try Chrome on Android or Safari on iOS.");
                 }
-                modelViewer.activateAR();
-            });
+            }, 1500); // Delay to allow loading
         });
     </script>
 
