@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WebAR Model Viewer</title>
 
-    <!-- Import model-viewer as a module -->
+    <!-- Import model-viewer as a module (Make sure it's inside <head>) -->
     <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
 
     <style>
@@ -15,7 +15,7 @@
             height: 100vh;
         }
         
-        /* Style for the AR button */
+        /* AR Button Style */
         #ar-button {
             position: absolute;
             bottom: 20px;
@@ -37,13 +37,13 @@
 </head>
 <body>
 
-    <!-- WebAR Model Viewer with Ground-Level Placement -->
+    <!-- WebAR Model Viewer -->
     <model-viewer 
         id="ar-viewer"
         src="https://ar-qrcode.vercel.app/assets/doric_pillar.glb"
-        ar 
-        ar-scale="fixed"  <!-- Keeps the model size fixed in the real world -->
-        ar-placement="floor"  <!-- Ensures the model appears on the ground -->
+        ar
+        ar-scale="fixed"  <!-- Keep the model size fixed in real world -->
+        ar-placement="floor"  <!-- Ensure model appears on the ground -->
         ar-modes="webxr scene-viewer quick-look"
         camera-controls 
         auto-rotate 
@@ -51,13 +51,29 @@
         disable-tap
         shadow-intensity="1">
         
-        <!-- Custom AR Button -->
+        <!-- AR Button -->
         <button id="ar-button" slot="ar-button">View in AR</button>
 
         <!-- Loading message -->
         <div slot="poster">Loading AR Model...</div>
 
     </model-viewer>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const modelViewer = document.getElementById("ar-viewer");
+            const arButton = document.getElementById("ar-button");
+
+            // Ensure camera permission is requested
+            arButton.addEventListener("click", () => {
+                if (!navigator.xr) {
+                    alert("WebXR is not supported in your browser. Try using Chrome on Android.");
+                    return;
+                }
+                modelViewer.activateAR();
+            });
+        });
+    </script>
 
 </body>
 </html>
