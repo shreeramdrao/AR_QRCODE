@@ -5,17 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WebAR Model Viewer</title>
 
-    <!-- Import model-viewer as a module (Make sure it's inside <head>) -->
+    <!-- Import model-viewer (Ensure it's a module) -->
     <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
 
     <style>
-        body { margin: 0; overflow: hidden; }
+        body { margin: 0; overflow: hidden; background: transparent; }
         model-viewer {
             width: 100vw;
             height: 100vh;
         }
         
-        /* AR Button Style */
+        /* AR Button Styling */
         #ar-button {
             position: absolute;
             bottom: 20px;
@@ -41,15 +41,16 @@
     <model-viewer 
         id="ar-viewer"
         src="https://ar-qrcode.vercel.app/assets/doric_pillar.glb"
-        ar
-        ar-scale="fixed"  <!-- Keep the model size fixed in real world -->
-        ar-placement="floor"  <!-- Ensure model appears on the ground -->
+        ar 
+        ar-scale="fixed"
+        ar-placement="floor"
         ar-modes="webxr scene-viewer quick-look"
         camera-controls 
         auto-rotate 
         interaction-prompt="none"
         disable-tap
-        shadow-intensity="1">
+        shadow-intensity="1"
+        style="background: transparent;">
         
         <!-- AR Button -->
         <button id="ar-button" slot="ar-button">View in AR</button>
@@ -64,7 +65,7 @@
             const modelViewer = document.getElementById("ar-viewer");
             const arButton = document.getElementById("ar-button");
 
-            // Ensure camera permission is requested
+            // Force WebXR to ask for camera permission
             arButton.addEventListener("click", () => {
                 if (!navigator.xr) {
                     alert("WebXR is not supported in your browser. Try using Chrome on Android.");
