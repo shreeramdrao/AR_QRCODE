@@ -3,51 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WebAR Auto-Open</title>
-
-    <!-- Import model-viewer -->
-    <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
-
+    <title>Custom WebXR AR Viewer</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@react-three/xr@0.5.0/dist/index.umd.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three/examples/jsm/webxr/XRControllerModelFactory.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three/examples/jsm/webxr/XRHandModelFactory.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three/examples/jsm/loaders/GLTFLoader.js"></script>
     <style>
-        body { margin: 0; overflow: hidden; background: transparent; }
-        model-viewer {
-            width: 100vw;
-            height: 100vh;
+        body { margin: 0; overflow: hidden; }
+        canvas { display: block; }
+        #enter-ar-button {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 20px;
+            font-size: 16px;
+            background: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
         }
     </style>
 </head>
 <body>
-
-    <!-- WebAR Model Viewer -->
-    <model-viewer 
-        id="ar-viewer"
-        src="https://ar-qrcode.vercel.app/assets/food.glb"
-        ar
-        ar-scale="fixed"
-        ar-placement="floor"
-        ar-modes="webxr scene-viewer quick-look"
-        camera-controls
-        auto-rotate
-        interaction-prompt="none"
-        disable-tap
-        shadow-intensity="1"
-        style="background: transparent;">
-    </model-viewer>
-
+    <button id="enter-ar-button">Start AR</button>
     <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const modelViewer = document.getElementById("ar-viewer");
+        let scene, camera, renderer;
+        let model;
 
-            // Try to auto-activate AR mode
-            setTimeout(() => {
-                if (modelViewer.canActivateAR) {
-                    modelViewer.activateAR();
-                } else {
-                    alert("WebXR is not supported in your browser. Please try Chrome on Android or Safari on iOS.");
+        function init() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100);
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.xr.enabled = true;
+            document.body.appendChild(renderer.domElement);
+
+            const light = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 1);
+            scene.add(light);
+
+            const loader = new THREE.GLTFLoader();
+            loader.load('https://ar-qrcode.vercel.app/assets/food.glb', (gltf) => {
+                model = gltf.scene;
+                model.position.set(0, 0, -2);
+                model.scale.set(0.5, 0.5, 0.5);
+                scene.add(model);
+            });
+
+            document.getElementById('enter-ar-button').addEventListener('click', () => {
+                navigator.xr.requestSession('immersive-ar', { requiredFeatures: ['local-floor'] })
+                    .then((session) => {
+                        renderer.xr.setSession(session);
+                        animate();
+                    })
+                    .catch((error) => console.error('Failed to start AR session:', error));
+            });
+        }
+
+        function animate() {
+            renderer.setAnimationLoop(() => {
+                if (model) {
+                    model.rotation.y += 0.01;
                 }
-            }, 1500); // Delay to allow loading
-        });
-    </script>
+                renderer.render(scene, camera);
+            });
+        }
 
+        init();
+    </script>
 </body>
 </html>
