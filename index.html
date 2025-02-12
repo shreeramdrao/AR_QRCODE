@@ -3,64 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Custom WebXR AR</title>
+    <title>WebAR Auto-Open</title>
+
+    <!-- Import model-viewer -->
+    <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
 
     <style>
-        body { margin: 0; overflow: hidden; background: transparent; display: flex; justify-content: center; align-items: center; height: 100vh; }
-        #startAR { 
-            position: absolute; 
-            bottom: 20px; 
-            left: 50%; 
-            transform: translateX(-50%);
-            padding: 10px 20px;
-            font-size: 18px;
-            background: #007BFF; 
-            color: white; 
-            border: none; 
-            border-radius: 5px; 
-            cursor: pointer;
+        body { margin: 0; overflow: hidden; background: transparent; }
+        model-viewer {
+            width: 100vw;
+            height: 100vh;
         }
     </style>
 </head>
 <body>
 
-    <button id="startAR">Start AR</button>
+    <!-- WebAR Model Viewer -->
+    <model-viewer 
+        id="ar-viewer"
+        src="https://ar-qrcode.vercel.app/assets/food.glb"
+        ar
+        ar-scale="fixed"
+        ar-placement="floor"
+        ar-modes="webxr scene-viewer quick-look"
+        camera-controls
+        auto-rotate
+        interaction-prompt="none"
+        disable-tap
+        shadow-intensity="1"
+        style="background: transparent;">
+    </model-viewer>
 
     <script>
-        async function startAR() {
-            if (navigator.xr) {
-                try {
-                    const session = await navigator.xr.requestSession('immersive-ar', { requiredFeatures: ['local-floor'] });
-                    const gl = document.createElement('canvas').getContext('webgl', { xrCompatible: true });
-                    const xrReferenceSpace = await session.requestReferenceSpace('local-floor');
-                    
-                    session.addEventListener('end', () => {
-                        document.body.style.background = 'transparent';
-                    });
+        document.addEventListener("DOMContentLoaded", () => {
+            const modelViewer = document.getElementById("ar-viewer");
 
-                    session.updateRenderState({ baseLayer: new XRWebGLLayer(session, gl) });
-
-                    const model = document.createElement('model-viewer');
-                    model.src = "https://ar-qrcode.vercel.app/assets/food.glb";
-                    model.style.width = '100vw';
-                    model.style.height = '100vh';
-                    model.setAttribute('ar', true);
-                    model.setAttribute('ar-modes', 'webxr');
-                    model.setAttribute('camera-controls', '');
-                    model.setAttribute('disable-tap', '');
-
-                    document.body.appendChild(model);
-                    model.activateAR();
-                } catch (error) {
-                    console.error('WebXR session failed:', error);
-                    alert('AR session failed: ' + error.message);
+            // Try to auto-activate AR mode
+            setTimeout(() => {
+                if (modelViewer.canActivateAR) {
+                    modelViewer.activateAR();
+                } else {
+                    alert("WebXR is not supported in your browser. Please try Chrome on Android or Safari on iOS.");
                 }
-            } else {
-                alert('WebXR is not supported on this device.');
-            }
-        }
-
-        document.getElementById('startAR').addEventListener('click', startAR);
+            }, 1500); // Delay to allow loading
+        });
     </script>
 
 </body>
