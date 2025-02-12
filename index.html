@@ -3,75 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Custom WebXR AR Viewer</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@react-three/xr@0.5.0/dist/index.umd.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three/examples/jsm/webxr/XRControllerModelFactory.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three/examples/jsm/webxr/XRHandModelFactory.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three/examples/jsm/loaders/GLTFLoader.js"></script>
+    <title>Custom WebXR AR</title>
+
     <style>
-        body { margin: 0; overflow: hidden; }
-        canvas { display: block; }
-        #enter-ar-button {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
+        body { margin: 0; overflow: hidden; background: transparent; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        #startAR { 
+            position: absolute; 
+            bottom: 20px; 
+            left: 50%; 
             transform: translateX(-50%);
             padding: 10px 20px;
-            font-size: 16px;
-            background: #007bff;
-            color: white;
-            border: none;
+            font-size: 18px;
+            background: #007BFF; 
+            color: white; 
+            border: none; 
+            border-radius: 5px; 
             cursor: pointer;
-            border-radius: 5px;
         }
     </style>
 </head>
 <body>
-    <button id="enter-ar-button">Start AR</button>
+
+    <button id="startAR">Start AR</button>
+
     <script>
-        let scene, camera, renderer;
-        let model;
+        async function startAR() {
+            if (navigator.xr) {
+                try {
+                    const session = await navigator.xr.requestSession('immersive-ar', { requiredFeatures: ['local-floor'] });
+                    const gl = document.createElement('canvas').getContext('webgl', { xrCompatible: true });
+                    const xrReferenceSpace = await session.requestReferenceSpace('local-floor');
+                    
+                    session.addEventListener('end', () => {
+                        document.body.style.background = 'transparent';
+                    });
 
-        function init() {
-            scene = new THREE.Scene();
-            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100);
-            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.xr.enabled = true;
-            document.body.appendChild(renderer.domElement);
+                    session.updateRenderState({ baseLayer: new XRWebGLLayer(session, gl) });
 
-            const light = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 1);
-            scene.add(light);
+                    const model = document.createElement('model-viewer');
+                    model.src = "https://ar-qrcode.vercel.app/assets/food.glb";
+                    model.style.width = '100vw';
+                    model.style.height = '100vh';
+                    model.setAttribute('ar', true);
+                    model.setAttribute('ar-modes', 'webxr');
+                    model.setAttribute('camera-controls', '');
+                    model.setAttribute('disable-tap', '');
 
-            const loader = new THREE.GLTFLoader();
-            loader.load('https://ar-qrcode.vercel.app/assets/food.glb', (gltf) => {
-                model = gltf.scene;
-                model.position.set(0, 0, -2);
-                model.scale.set(0.5, 0.5, 0.5);
-                scene.add(model);
-            });
-
-            document.getElementById('enter-ar-button').addEventListener('click', () => {
-                navigator.xr.requestSession('immersive-ar', { requiredFeatures: ['local-floor'] })
-                    .then((session) => {
-                        renderer.xr.setSession(session);
-                        animate();
-                    })
-                    .catch((error) => console.error('Failed to start AR session:', error));
-            });
-        }
-
-        function animate() {
-            renderer.setAnimationLoop(() => {
-                if (model) {
-                    model.rotation.y += 0.01;
+                    document.body.appendChild(model);
+                    model.activateAR();
+                } catch (error) {
+                    console.error('WebXR session failed:', error);
+                    alert('AR session failed: ' + error.message);
                 }
-                renderer.render(scene, camera);
-            });
+            } else {
+                alert('WebXR is not supported on this device.');
+            }
         }
 
-        init();
+        document.getElementById('startAR').addEventListener('click', startAR);
     </script>
+
 </body>
 </html>
